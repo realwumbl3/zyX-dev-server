@@ -31,14 +31,14 @@ export default class HomepageApp {
                             <span>${this.connected.interp((c) => (c ? "Connected" : "Disconnected"))}</span>
                         </div>
 
-                        <div class="auth-controls" zyx-if=${this.isAuthenticated.interp((auth) => !auth)}>
+                        <div class="auth-controls" zyx-if=${[this.isAuthenticated, (auth) => !auth]}>
                             <button class="btn btn-google" zyx-click=${() => this.signInWithGoogle()}>
                                 <span class="google-icon">G</span>
                                 Sign in with Google
                             </button>
                         </div>
 
-                        <div class="auth-controls" zyx-if=${this.isAuthenticated.interp((auth) => auth)}>
+                        <div class="auth-controls" zyx-if=${[this.isAuthenticated, (auth) => auth]}>
                             <div class="user-info">
                                 <span>Welcome!</span>
                                 <button class="btn btn-secondary btn-small" zyx-click=${() => this.signOut()}>
@@ -50,20 +50,18 @@ export default class HomepageApp {
                 </header>
 
                 <main class="homepage-content">
-                    <div class="error-message" zyx-if=${this.error.interp((e) => !!e || null)}>
+                    <div class="error-message" zyx-if=${[this.error, (e) => !!e]}>
                         ${this.error.interp((e) => e || "")}
                     </div>
 
-                        <div class="auth-prompt" zyx-if=${this.isAuthenticated.interp((auth) => !auth)}>
-                            <div class="action-card">
-                                <h2>Welcome to BoilerPlate</h2>
-                                <p>
-                                    Please sign in with Google to create or join rooms.
-                                </p>
-                            </div>
+                    <div class="auth-prompt" zyx-if=${[this.isAuthenticated, (auth) => !auth]}>
+                        <div class="action-card">
+                            <h2>Welcome to BoilerPlate</h2>
+                            <p>Please sign in with Google to create or join rooms.</p>
                         </div>
+                    </div>
 
-                    <div class="room-active" zyx-if=${this.currentRoom.interp((r) => !!r)}>
+                    <div class="room-active" zyx-if=${[this.currentRoom, (r) => !!r]}>
                         <h2>Room: ${this.currentRoom.interp((r) => r)}</h2>
                         <p>You are currently in a room.</p>
                         <button class="btn btn-secondary" zyx-click=${() => this.leaveRoom()}>Leave Room</button>
@@ -71,7 +69,7 @@ export default class HomepageApp {
 
                     <div
                         class="room-actions"
-                        zyx-if=${this.currentRoom.interp((r) => !r && this.isAuthenticated.get())}
+                        zyx-if=${[this.currentRoom, this.isAuthenticated, (r, auth) => !r && !!auth]}
                     >
                         <div class="action-card">
                             <h2>Create Room</h2>
@@ -425,7 +423,7 @@ css`
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .error-message {
         background: rgba(255, 0, 0, 0.1);
         border: 1px solid rgba(255, 0, 0, 0.3);
