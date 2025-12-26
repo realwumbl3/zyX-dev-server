@@ -1,5 +1,5 @@
-import { WeakRefSet, Deque } from "./zyX-Types.js";
-import { LiveInterp } from "./zyX-LiveInterp.js";
+import { WeakRefSet, Deque } from "./Types.js";
+import { LiveInterp } from "./HTML/LiveInterp.js";
 
 /**
  * An enhanced array implementation with event handling

@@ -6,6 +6,7 @@
 @import "/shared/css/styles-base.css";
 @import "/shared/css/styles-components.css";
 @import "/shared/css/styles-forms.css";
+@import "./app.css";
 
 @property --gradient-angle {
     syntax: '<angle>';

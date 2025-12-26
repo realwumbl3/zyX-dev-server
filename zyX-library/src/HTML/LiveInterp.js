@@ -1,4 +1,4 @@
-import { makePlaceable } from "./zyX-HTML.js";
+import { makePlaceable } from "./HTML.js";
 
 export class LiveInterp {
     constructor(reactive, interp, mode) {

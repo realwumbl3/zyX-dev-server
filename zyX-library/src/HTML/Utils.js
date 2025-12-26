@@ -64,23 +64,6 @@ export function placer(what, where) {
     else throw new Error(`${where} not found`);
 }
 
-/**
- * @type {string}
- */
-export const placeholdTag = "zyx-ph";
-
-/**
- * @param {string} key
- * @returns {string}
- */
-export function strPlaceholder(key) {
-    return `<${placeholdTag} id='${key}'></${placeholdTag}>`;
-}
-
-/**
- * @type {RegExp}
- */
-export const placeholderRegex = new RegExp(`(${strPlaceholder("\\d+")})`, "g");
 
 /**
  * @param {string} markup

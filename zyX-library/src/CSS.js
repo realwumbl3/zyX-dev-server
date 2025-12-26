@@ -3,7 +3,7 @@
  * @module zyX-CSS
  */
 
-import  html from "./zyX-HTML.js";
+import  html from "./HTML/HTML.js";
 
 /**
  * Manages CSS styles in the application, providing methods to load external stylesheets

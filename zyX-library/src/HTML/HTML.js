@@ -1,25 +1,16 @@
-import {
-    placeholdTag,
-    getPlaceholderID,
-    innerHTML,
-    placer,
-    strPlaceholder,
-    wrapInTemplate,
-    trimTextNodes,
-} from "./zyX-HTML-Utils.js";
+import { getPlaceholderID, innerHTML, placer, wrapInTemplate, trimTextNodes } from "./Utils.js";
+import { defaultEvents, enhandedDefaultEvents } from "./DefaultEvents.js";
+import { conditionalAttributes } from "./Conditional.js";
+import { LiveInterp } from "./LiveInterp.js";
+import { processLiveDomListAttributes } from "./LiveDomList.js";
+import { radioViewAttributes, RadioViewManager } from "./RadioView.js";
 
 const IDENTIFIER_KEY = "###";
 const CONTENT_CONTEXT = "content";
 const TAG_CONTEXT = "tag";
 const UNQUOTED_VALUE_CONTEXT = "unquoted-value";
 const QUOTED_VALUE_CONTEXT = "quoted-value";
-
-import { LiveInterp } from "./zyX-LiveInterp.js";
-
-import { defaultEvents, enhandedDefaultEvents } from "./zyX-HTML/DefaultEvents.js";
-import { conditionalAttributes } from "./zyX-Conditional.js";
-import { processLiveDomListAttributes } from "./zyX-LiveDomList.js";
-import { radioViewAttributes, RadioViewManager } from "./zyX-HTML/RadioView.js";
+const PLACEHOLDER_TAG = "zyx-placeholder";
 
 const REMOVE_ATTRIBUTES = ["this", "push", "ph"];
 
@@ -176,7 +167,7 @@ export class ZyXHTML {
             case "tr":
                 return `<td data-ph-id='${index}'></td>`;
             default:
-                return strPlaceholder(index);
+                return `<${PLACEHOLDER_TAG} id='${index}'></${PLACEHOLDER_TAG}>`;
         }
     }
 
@@ -390,7 +381,7 @@ export class ZyXHTML {
         };
 
         for (const node of allElements) {
-            if (node.matches(placeholdTag)) {
+            if (node.matches(PLACEHOLDER_TAG)) {
                 const phid = node.getAttribute("id");
                 if (phid) {
                     const dataValue = this.#data[phid]?.value;

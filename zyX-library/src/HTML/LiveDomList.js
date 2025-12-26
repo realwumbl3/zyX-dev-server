@@ -1,6 +1,6 @@
-import { makePlaceable } from "./zyX-HTML.js";
-import { LiveList } from "./zyX-LiveTypes.js";
-import { LiveInterp } from "./zyX-LiveInterp.js";
+import { makePlaceable } from "./HTML.js";
+import { LiveList } from "../LiveTypes.js";
+import { LiveInterp } from "./LiveInterp.js";
 
 const LiveLists = new WeakMap();
 
@@ -54,7 +54,7 @@ export default class LiveDomList {
      */
     #range;
     /**
-     * @type {Array<Number, Number>} - offset for the range of elements to display
+     * @type {Number} - offset for the range of elements to display
      */
     #offset;
     /**

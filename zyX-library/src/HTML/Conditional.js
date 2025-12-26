@@ -1,4 +1,4 @@
-import { getPlaceholderID } from "./zyX-HTML-Utils.js";
+import { getPlaceholderID } from "./Utils.js";
 
 // Global variable for the inline "or" attribute name - easily adjustable
 export const INLINE_OR_ATTRIBUTE_NAME = "or";

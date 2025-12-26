@@ -11,18 +11,18 @@
 
 // Core imports
 // HTML
-import html, { ZyXHTML } from "./src/zyX-HTML.js";
+import html, { ZyXHTML } from "./src/HTML/HTML.js";
 
 // CSS
-import css, { zyxcss } from "./src/zyX-CSS.js";
+import css, { zyxcss } from "./src/CSS.js";
 
 // Delay
-import { delayChain, breakDelayChain, clearDelay, delay, debounce, instant, throttle } from "./src/zyX-Delay.js";
+import { delayChain, breakDelayChain, clearDelay, delay, debounce, instant, throttle } from "./src/Delay.js";
 
 // Types
-import { WeakRefSet, Deque } from "./src/zyX-Types.js";
+import { WeakRefSet, Deque } from "./src/Types.js";
 // LiveTypes
-import { LiveList, LiveDeque, LiveVar } from "./src/zyX-LiveTypes.js";
+import { LiveList, LiveDeque, LiveVar } from "./src/LiveTypes.js";
 // Currently implemented exports
 export {
     // HTML
