@@ -2,5 +2,8 @@
     "files.exclude": {
         "**/node_modules/**": true,
         "**/__pycache__/**": true
-    }
+    },
+    "python.autoComplete.extraPaths": [
+        "/home/wumbl3priv/Boilerplate/backend/BoilerPlate-v1-03"
+    ]
 }
