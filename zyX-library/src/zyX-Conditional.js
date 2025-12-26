@@ -254,11 +254,11 @@ export function processIf({ node, data, zyxhtml }) {
         const orAttrValue = node.getAttribute(INLINE_OR_ATTRIBUTE_NAME);
         const orPlaceholderId = getPlaceholderID(orAttrValue);
         const orData = orPlaceholderId !== null && zyxhtml ? zyxhtml.getDataByPlaceholderId(orPlaceholderId) : null;
-        
+
         if (orData !== null && orData !== undefined) {
             inlineOr = normalizeConditionData(orData);
         }
-        
+
         // Remove the or attribute after processing
         if (zyxhtml) {
             zyxhtml.markAttributeProcessed(node, INLINE_OR_ATTRIBUTE_NAME);
@@ -293,11 +293,11 @@ export function processElseIf({ node, data, zyxhtml }) {
         const orAttrValue = node.getAttribute(INLINE_OR_ATTRIBUTE_NAME);
         const orPlaceholderId = getPlaceholderID(orAttrValue);
         const orData = orPlaceholderId !== null && zyxhtml ? zyxhtml.getDataByPlaceholderId(orPlaceholderId) : null;
-        
+
         if (orData !== null && orData !== undefined) {
             inlineOr = normalizeConditionData(orData);
         }
-        
+
         // Remove the or attribute after processing
         if (zyxhtml) {
             zyxhtml.markAttributeProcessed(node, INLINE_OR_ATTRIBUTE_NAME);

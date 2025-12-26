@@ -11,10 +11,7 @@ its own `static_folder` or `static_url_path`.
 """
 
 # Import Flask primitives to build the API and render the HTML shell.
-from flask import Blueprint, jsonify, render_template, request
-
-# Import database models and utilities
-from server.models import Room
+from flask import Blueprint, render_template
 
 # Create the homepage blueprint that encapsulates all related routes.
 homepage_bp = Blueprint(
@@ -25,7 +22,6 @@ homepage_bp = Blueprint(
     template_folder="../frontend/templates",
 )
 
-
 @homepage_bp.route("/")
 def homepage_home():
     """
@@ -35,7 +31,6 @@ def homepage_home():
     `template_folder`, keeping the HTML shell colocated with its JS/CSS.
     """
     return render_template("homepage.html")
-
 
 @homepage_bp.route("/auth/success")
 def auth_success():

@@ -83,20 +83,18 @@ export default class HomepageApp {
                             <div class="join-form">
                                 <input
                                     type="text"
-                                    this="roomCodeInput"
+                                    this="room_code_input"
                                     placeholder="Enter room code"
                                     class="input-field"
-                                    value=${this.roomCodeInput.interp((r) => r || "")}
-                                    zyx-input=${(e) => this.roomCodeInput.set(e.target.value)}
                                     zyx-keypress=${(e) => {
-                                        if (e.key === "Enter") {
-                                            this.joinRoom(this.roomCodeInput.get());
+                                        if (e.e.key === "Enter") {
+                                            this.joinRoom(this.room_code_input.value);
                                         }
                                     }}
                                 />
                                 <button
                                     class="btn btn-primary"
-                                    zyx-click=${() => this.joinRoom(this.roomCodeInput.get())}
+                                    zyx-click=${() => this.joinRoom(this.room_code_input.value)}
                                 >
                                     Join
                                 </button>
@@ -170,7 +168,6 @@ export default class HomepageApp {
         // Clear token
         localStorage.removeItem("auth_token");
         this.isAuthenticated.set(false);
-        this.user.set(null);
 
         // Disconnect socket
         if (this.socket) {

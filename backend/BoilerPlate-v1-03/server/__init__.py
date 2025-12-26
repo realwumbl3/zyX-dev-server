@@ -16,6 +16,7 @@ if os.getenv("SOCKETIO_ASYNC_MODE") == "gevent":
         # the underlying issue if this is actually misconfigured.
         pass
 
+
 # Standard lib imports for timing and logging, and SQLAlchemy inspector for schema checks
 import time
 from typing import Optional

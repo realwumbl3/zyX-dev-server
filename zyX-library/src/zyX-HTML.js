@@ -14,17 +14,12 @@ const TAG_CONTEXT = "tag";
 const UNQUOTED_VALUE_CONTEXT = "unquoted-value";
 const QUOTED_VALUE_CONTEXT = "quoted-value";
 
-/* <zyx-module place src="./exampleCode.js"></zyx-script> TODO: query for zyx-module and replace with ZyXHTML default at src. */
-
 import { LiveInterp } from "./zyX-LiveInterp.js";
-
-import { LegacyShadowRoot } from "./zyX-Shadowroot.js";
 
 import { defaultEvents, enhandedDefaultEvents } from "./zyX-HTML/DefaultEvents.js";
 import { conditionalAttributes } from "./zyX-Conditional.js";
 import { processLiveDomListAttributes } from "./zyX-LiveDomList.js";
 import { radioViewAttributes, RadioViewManager } from "./zyX-HTML/RadioView.js";
-import zyxTransform from "./zyX-Transform.js";
 
 const REMOVE_ATTRIBUTES = ["this", "push", "ph"];
 
@@ -757,13 +752,6 @@ const zyxAttributes = {
                 else throw new Error("Invalid groupname");
             }
         }
-    },
-    "zyx-transform": ({ node, data }) => {
-        node.zyxTrans = zyxTransform(node, data?.map);
-    },
-    // Deprecation Zone
-    "zyx-shadowroot": ({ node }) => {
-        LegacyShadowRoot({ node });
     },
 };
 
