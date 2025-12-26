@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Success</title>
+</head>
+<body>
+    <script>
+        // Get the auth token from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+
+        console.log('Auth success page loaded');
+        console.log('Token from URL:', token ? 'present' : 'missing');
+        console.log('Window opener:', window.opener ? 'available' : 'not available');
+
+        if (token && window.opener) {
+            console.log('Sending auth message to parent window');
+            // Send token to parent window with specific origin
+            const targetOrigin = window.location.origin;
+            window.opener.postMessage({
+                type: 'newapp_auth',
+                token: token
+            }, targetOrigin);
+
+            // Small delay before closing to ensure message is sent
+            setTimeout(() => {
+                console.log('Closing popup window');
+                window.close();
+            }, 100);
+        } else {
+            console.log('Redirecting to homepage (fallback)');
+            // Fallback: redirect to homepage if not in popup or no token
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>
