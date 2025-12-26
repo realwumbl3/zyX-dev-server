@@ -4,6 +4,6 @@
         "**/__pycache__/**": true
     },
     "python.autoComplete.extraPaths": [
-        "/home/wumbl3priv/Boilerplate/backend/BoilerPlate-v1-03"
+        "/home/wumbl3wsl/zyX-dev-server/backend/BoilerPlate-v1-03"
     ]
 }

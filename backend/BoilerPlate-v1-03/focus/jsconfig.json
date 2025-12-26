@@ -2,8 +2,8 @@
     "compilerOptions": {
         "baseUrl": ".",
         "paths": {
-            "*": ["/home/wumbl3priv/Boilerplate/backend/BoilerPlate-v1-03/ui_portals/homepage/frontend/static/*"],
-            "/shared/*": ["/home/wumbl3priv/Boilerplate/backend/BoilerPlate-v1-03/shared/*"]
+            "*": ["/home/wumbl3wsl/zyX-dev-server/backend/BoilerPlate-v1-03/ui_portals/homepage/frontend/static/*"],
+            "/shared/*": ["/home/wumbl3wsl/zyX-dev-server/backend/BoilerPlate-v1-03/shared/*"]
         }
     },
     "include": ["**/*.js", "**/*.ts", "**/*.jsx", "**/*.tsx"],

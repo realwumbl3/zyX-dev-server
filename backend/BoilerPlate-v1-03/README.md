@@ -100,7 +100,7 @@ BoilerPlate supports configuration via environment variables:
 
 1. **Navigate to the project directory**:
    ```bash
-   cd /home/wumbl3priv/Boilerplate/Server/backend/BoilerPlate-v1-00
+   cd /home/wumbl3wsl/zyX-dev-server/Server/backend/BoilerPlate-v1-00
    ```
 
 2. **Install Python dependencies**:
