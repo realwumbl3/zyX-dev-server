@@ -40,6 +40,10 @@ export class LiveList extends Array {
         return this;
     }
 
+    at(index) {
+        return this[index];
+    }
+
     /**
      * Adds an event listener
      * @param {Function} cb - The callback function

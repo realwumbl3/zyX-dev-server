@@ -176,6 +176,94 @@ function parseRadioAttr(raw) {
 }
 
 /**
+ * RadioView integration for ZyXHTML instances.
+ * Provides the public API for RadioView functionality.
+ */
+export class RadioViewIntegration {
+    /**
+     * @param {any} zyxhtml - The ZyXHTML instance
+     */
+    constructor(zyxhtml) {
+        /** @private */
+        this._zyxhtml = zyxhtml;
+        /** @private */
+        this._manager = null;
+    }
+
+    /**
+     * Lazily get the RadioView manager for this instance.
+     * @private
+     * @returns {RadioViewManager}
+     */
+    _getManager() {
+        if (!this._manager) {
+            this._manager = this._zyxhtml.getManager("radioView", () => new RadioViewManager(this._zyxhtml));
+        }
+        return this._manager;
+    }
+
+    /**
+     * Select a view within a namespace for radio-view.
+     * @param {string} namespace - The radio-view namespace (e.g., "queues")
+     * @param {string} view - The view name to select (e.g., "queued")
+     * @returns {void}
+     */
+    select(namespace, view) {
+        this._getManager().select(namespace, view);
+    }
+
+    /**
+     * Get currently selected view within a namespace.
+     * @param {string} namespace - The radio-view namespace
+     * @returns {string|null} - The selected view or null
+     */
+    getSelected(namespace) {
+        return this._getManager().getSelected(namespace);
+    }
+
+    /**
+     * Subscribe to selection changes within a namespace.
+     * @param {string} namespace - The radio-view namespace
+     * @param {(view: string)=>void} cb - Callback invoked on selection change
+     * @returns {() => void} - Unsubscribe function
+     */
+    subscribe(namespace, cb) {
+        return this._getManager().subscribe(namespace, cb);
+    }
+
+    /**
+     * Register a control element for a namespace.view.
+     * @param {string} namespace
+     * @param {string} view
+     * @param {Element} node
+     * @returns {void}
+     */
+    registerControl(namespace, view, node) {
+        this._getManager().registerControl(namespace, view, node);
+    }
+
+    /**
+     * Register a panel element for a namespace.view.
+     * @param {string} namespace
+     * @param {string} view
+     * @param {Element} node
+     * @returns {void}
+     */
+    registerPanel(namespace, view, node) {
+        this._getManager().registerPanel(namespace, view, node);
+    }
+}
+
+/**
+ * Get or create the RadioView integration for a ZyXHTML instance.
+ * @param {any} zyxhtml - The ZyXHTML instance
+ * @returns {RadioViewIntegration}
+ */
+export function getRadioViewIntegration(zyxhtml) {
+    return zyxhtml.getManager("radioViewIntegration", () => new RadioViewIntegration(zyxhtml));
+}
+
+/**
  * Directive handlers for zyX-HTML
  */
 export const radioViewAttributes = {
@@ -187,10 +275,11 @@ export const radioViewAttributes = {
         const parsed = parseRadioAttr(raw);
         if (!parsed) return;
         const { ns, view, isControl } = parsed;
+        const integration = getRadioViewIntegration(zyxhtml);
         if (isControl) {
-            zyxhtml.radioViewRegisterControl(ns, view, node);
+            integration.registerControl(ns, view, node);
         } else {
-            zyxhtml.radioViewRegisterPanel(ns, view, node);
+            integration.registerPanel(ns, view, node);
         }
     },
 };

@@ -1,191 +1,237 @@
-import { html, LiveVar } from "/shared/dep/zyx-library/index.js";
+import { html, debugHTML, css, LiveVar, LiveList } from "/shared/dep/zyx-library/index.js";
 import io from "/shared/dep/socket.io.min.esm.js";
+
+import HeaderComponent from "./header.js";
+
+export const state = {
+    connectedRooms: new LiveList([]),
+    currentRoom: new LiveVar(null),
+    error: new LiveVar(null),
+    isAuthenticated: new LiveVar(false),
+    connected: new LiveVar(false),
+};
+
+class RoomModel {
+    constructor(app, roomCode) {
+        this.app = app;
+        this.roomCode = new LiveVar(roomCode);
+        this.seconds = new LiveVar(0);
+        this.interval = setInterval(() => this.seconds.set(this.seconds.get() + 1), 1000);
+    }
+
+    focus() {
+        state.currentRoom.set(this);
+    }
+
+    leaveRoom() {
+        this.app.socket.emit("room.leave", {
+            code: this.roomCode.get(),
+        });
+        state.connectedRooms.remove(this);
+        if (state.currentRoom.get() === this) state.currentRoom.set(state.connectedRooms.at(0) || null);
+        clearInterval(this.interval);
+    }
+}
+
+class RoomSidebarComponent {
+    constructor(room) {
+        this.room = room;
+        this.expanded = new LiveVar(false);
+        html`
+            <div
+                class="room-component"
+                expanded=${this.expanded.interp((expanded) => expanded || null)}
+                focused=${state.currentRoom.interp((currentRoom) => currentRoom === room || null)}
+                zyx-click=${(e) => {
+                    // Don't focus if clicking inside room-actions
+                    if (e.target.closest(".room-actions")) return;
+                    this.room.focus();
+                }}
+            >
+                <h2>
+                    Room: ${this.room.roomCode}
+                </h2>
+                <div class="room-actions">
+                    <button class="btn btn-secondary" zyx-click=${() => this.room.leaveRoom()}>Leave Room</button>
+                </div>
+            </div>
+        `.bind(this);
+    }
+}
+
+class RoomListComponent {
+    constructor() {
+        html`
+            <div class="room-list-sidebar" zyx-if=${[state.connectedRooms, (rooms) => rooms.length > 0]}>
+                <h2>Connected Rooms</h2>
+                <div
+                    class="room-list-items"
+                    zyx-live-list=${{
+                        list: state.connectedRooms,
+                        compose: RoomSidebarComponent,
+                    }}
+                ></div>
+            </div>
+        `.bind(this);
+    }
+}
+
+class FocusedRoomComponent {
+    constructor() {
+        html`
+            <div class="focused-room">
+                <div class="focused-room-header" zyx-if=${state.currentRoom}>
+                    <h2>Focused Room</h2>
+                </div>
+                <div class="focused-room-content" zyx-if=${state.currentRoom}>
+                    ${state.currentRoom.contentInterp((room) => (room ? new RoomComponent(room) : null))}
+                </div>
+                <div class="focused-room-empty" zyx-if-not=${state.currentRoom}>
+                    <div class="empty-state">
+                        <h2>No Room Focused</h2>
+                        <p>Select a room from the sidebar to focus on it, or create/join a new room.</p>
+                    </div>
+                </div>
+            </div>
+        `.bind(this);
+    }
+}
+
+class RoomComponent {
+    constructor(room) {
+        this.room = room;
+        this.expanded = new LiveVar(false);
+        html`
+            <div
+                class="room-component"
+                expanded=${this.expanded.interp((expanded) => expanded || null)}
+                focused=${state.currentRoom.interp((currentRoom) => currentRoom === room || null)}
+                zyx-click=${(e) => {
+                    // Don't focus if clicking inside room-actions
+                    if (e.target.closest(".room-actions")) return;
+                    this.room.focus();
+                }}
+            >
+                <h2>
+                    Room: ${this.room.roomCode}
+                </h2>
+                <div class="room-actions">
+                    <button class="btn btn-secondary" zyx-click=${() => this.room.leaveRoom()}>Leave Room</button>
+                </div>
+            </div>
+        `.bind(this);
+    }
+}
 
 export default class HomepageApp {
     constructor() {
-        // State using LiveVar for reactivity
-        this.connected = new LiveVar(false);
-        this.currentRoom = new LiveVar(null);
-        this.error = new LiveVar(null);
-        this.roomCodeInput = new LiveVar("");
-
-        // Authentication state
-        this.isAuthenticated = new LiveVar(false);
-
         this.socket = null;
         this.initAuth();
         this.initSocket();
 
+        this.header = new HeaderComponent(this);
+
+        this.roomList = new RoomListComponent();
+        this.focusedRoom = new FocusedRoomComponent();
+
         // Render the component
         html`
             <div class="homepage-container">
-                <header class="homepage-header">
-                    <h1>BoilerPlate</h1>
-                    <div class="header-controls">
-                        <div
-                            class="connection-status"
-                            class:connected=${this.connected.interp((c) => c || null)}
-                            class:disconnected=${this.connected.interp((c) => !c || null)}
-                        >
-                            <span class="status-dot"></span>
-                            <span>${this.connected.interp((c) => (c ? "Connected" : "Disconnected"))}</span>
-                        </div>
-
-                        <div class="auth-controls" zyx-if=${[this.isAuthenticated, (auth) => !auth]}>
-                            <button class="btn btn-google" zyx-click=${() => this.signInWithGoogle()}>
-                                <span class="google-icon">G</span>
-                                Sign in with Google
-                            </button>
-                        </div>
-
-                        <div class="auth-controls" zyx-if=${[this.isAuthenticated, (auth) => auth]}>
-                            <div class="user-info">
-                                <span>Welcome!</span>
-                                <button class="btn btn-secondary btn-small" zyx-click=${() => this.signOut()}>
-                                    Sign Out
-                                </button>
-                            </div>
-                        </div>
+                ${this.header}
+                <div class="auth-prompt" zyx-if-not=${state.isAuthenticated}>
+                    <div class="action-card">
+                        <h2>Welcome to BoilerPlate</h2>
+                        <p>Please sign in with Google to create or join rooms.</p>
                     </div>
-                </header>
-
-                <main class="homepage-content">
-                    <div class="error-message" zyx-if=${[this.error, (e) => !!e]}>
-                        ${this.error.interp((e) => e || "")}
+                </div>
+                <div class="homepage-content-container" zyx-else>
+                    <div class="homepage-content-selector">
+                        <button class="btn btn-primary" zyx-radioview="pages.content.open">Rooms</button>
+                        <button class="btn btn-primary" zyx-radioview="pages.profile.open">Profile</button>
+                        <button class="btn btn-primary" zyx-radioview="pages.settings.open">Settings</button>
                     </div>
+                    <main class="homepage-content" this="app_main" zyx-radioview="pages.content">
+                        <div class="error-message" zyx-if=${state.error}>${state.error.interp((e) => e || "")}</div>
+                        <div class="main-layout">
+                            <aside class="sidebar">
+                                ${this.roomList}
+                                <div class="room-actions">
+                                    <div class="action-card">
+                                        <h2>Create Room</h2>
+                                        <p>Create a new room and invite others to join.</p>
+                                        <button class="btn btn-primary btn-full" zyx-click=${() => this.createRoom()}>
+                                            Create Room
+                                        </button>
 
-                    <div
-                        class="three-condition-test"
-                        zyx-if=${[
-                            this.isAuthenticated,
-                            this.currentRoom,
-                            this.connected,
-                            (auth, room, connected) => !!auth && !!room && !!connected,
-                        ]}
-                    >
-                        <h2>Three condition test</h2>
-                        <p>You are authenticated, in a room, and connected to the server.</p>
-                    </div>
-
-                    <div class="auth-prompt" zyx-if=${[this.isAuthenticated, (auth) => !auth]}>
-                        <div class="action-card">
-                            <h2>Welcome to BoilerPlate</h2>
-                            <p>Please sign in with Google to create or join rooms.</p>
+                                        <div class="join-room-section">
+                                            <h3>Join Existing Room</h3>
+                                            <div class="join-form">
+                                                <input
+                                                    type="text"
+                                                    this="room_code_input"
+                                                    placeholder="Enter room code"
+                                                    class="input-field"
+                                                    zyx-keypress=${(e) =>
+                                                        e.e.key === "Enter" &&
+                                                        this.joinRoom(this.room_code_input.value)}
+                                                />
+                                                <button
+                                                    class="btn btn-primary"
+                                                    zyx-click=${() => this.joinRoom(this.room_code_input.value)}
+                                                >
+                                                    Join
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </aside>
+                            <div class="main-content">${this.focusedRoom}</div>
                         </div>
-                    </div>
-
-                    <div class="room-active" zyx-if=${[this.currentRoom, (r) => !!r]}>
-                        <h2>Room: ${this.currentRoom.interp((r) => r)}</h2>
-                        <p>You are currently in a room.</p>
-                        <button class="btn btn-secondary" zyx-click=${() => this.leaveRoom()}>Leave Room</button>
-                    </div>
-
-                    <div
-                        class="room-actions"
-                        zyx-if=${[this.currentRoom, this.isAuthenticated, (r, auth) => !r && !!auth]}
-                    >
-                        <div class="action-card">
-                            <h2>Create Room</h2>
-                            <p>Create a new room and invite others to join.</p>
-                            <button class="btn btn-primary" zyx-click=${() => this.createRoom()}>Create Room</button>
+                    </main>
+                    <main class="homepage-content" this="app_main" zyx-radioview="pages.profile">
+                        <div class="profile-content">
+                            <h2>Profile</h2>
+                            <p>Welcome to your profile.</p>
                         </div>
-
-                        <div class="action-card">
-                            <h2>Join Room</h2>
-                            <p>Enter a room code to join an existing room.</p>
-                            <div class="join-form">
-                                <input
-                                    type="text"
-                                    this="room_code_input"
-                                    placeholder="Enter room code"
-                                    class="input-field"
-                                    zyx-keypress=${(e) => {
-                                        if (e.e.key === "Enter") {
-                                            this.joinRoom(this.room_code_input.value);
-                                        }
-                                    }}
-                                />
-                                <button
-                                    class="btn btn-primary"
-                                    zyx-click=${() => this.joinRoom(this.room_code_input.value)}
-                                >
-                                    Join
-                                </button>
-                            </div>
+                    </main>
+                    <main class="homepage-content" this="app_main" zyx-radioview="pages.settings">
+                        <div class="settings-content">
+                            <h2>Settings</h2>
+                            <p>Welcome to your settings.</p>
                         </div>
-                    </div>
-                </main>
-
+                    </main>
+                </div>
                 <footer class="homepage-footer">
                     <p>&copy; ${new Date().getFullYear()} BoilerPlate. Open Source.</p>
                 </footer>
             </div>
         `.bind(this);
+        /** zyXSense @type {HTMLElement} */
+        this.app_main;
+        /** zyXSense @type {HTMLInputElement} */
+        this.room_code_input;
     }
 
     initAuth() {
         // Check for existing auth token
         const token = localStorage.getItem("auth_token");
         if (token) {
-            this.isAuthenticated.set(true);
+            state.isAuthenticated.set(true);
             // TODO: Decode token to get user info if needed
         }
-    }
-
-    async signInWithGoogle() {
-        try {
-            // Open Google OAuth popup
-            window.open("/auth/google/start", "google-oauth", "width=500,height=600,scrollbars=yes,resizable=yes");
-
-            // Listen for auth message from popup
-            const handleAuthMessage = (event) => {
-                console.log("Auth message received:", event.data);
-                if (event.data.type === "newapp_auth" && event.data.token) {
-                    // Store token
-                    localStorage.setItem("auth_token", event.data.token);
-                    this.isAuthenticated.set(true);
-                    // Clear error and reinitialize socket
-                    this.error.set(null);
-                    this.initSocket();
-
-                    // Remove event listener
-                    window.removeEventListener("message", handleAuthMessage);
-                }
-            };
-
-            window.addEventListener("message", handleAuthMessage);
-        } catch (error) {
-            this.updateError("Failed to open sign-in popup");
-        }
-    }
-
-    signOut() {
-        // Clear token
-        localStorage.removeItem("auth_token");
-        this.isAuthenticated.set(false);
-
-        // Disconnect socket
-        if (this.socket) {
-            this.socket.disconnect();
-            this.socket = null;
-        }
-
-        // Reset connection status
-        this.connected.set(false);
-        this.currentRoom.set(null);
-        this.error.set(null);
     }
 
     updateError(error) {
         if (error !== null) {
             console.error("Error:", error);
         }
-        this.error.set(error);
+        state.error.set(error);
     }
 
     initSocket() {
         // Only initialize socket if authenticated
-        if (!this.isAuthenticated.get()) {
+        if (!state.isAuthenticated.get()) {
             return;
         }
 
@@ -217,16 +263,16 @@ export default class HomepageApp {
         });
 
         this.socket.on("connect", () => {
-            this.connected.set(true);
+            state.connected.set(true);
             this.updateError(null);
         });
 
         this.socket.on("disconnect", () => {
-            this.connected.set(false);
+            state.connected.set(false);
         });
 
         this.socket.on("connect_error", (err) => {
-            this.connected.set(false);
+            state.connected.set(false);
             this.updateError(err?.message || "Failed to connect to server");
         });
 
@@ -236,23 +282,19 @@ export default class HomepageApp {
 
         this.socket.on("user.join.result", (data) => {
             if (data.ok) {
-                this.currentRoom.set(data.code);
+                const newRoom = new RoomModel(this, data.code);
+                state.currentRoom.set(newRoom);
+                state.connectedRooms.push(newRoom);
                 this.updateError(null);
             }
         });
     }
 
     async createRoom() {
-        if (!this.isAuthenticated.get()) {
-            this.updateError("Please sign in first");
-            return;
-        }
+        if (!state.isAuthenticated.get()) return this.updateError("Please sign in first");
 
         const token = localStorage.getItem("auth_token");
-        if (!token) {
-            this.updateError("Authentication token missing");
-            return;
-        }
+        if (!token) return this.updateError("Authentication token missing");
 
         try {
             const response = await fetch("/api/room.create", {
@@ -265,50 +307,28 @@ export default class HomepageApp {
 
             if (!response.ok) {
                 const error = await response.json();
-                throw new Error(error.error || "Failed to create room");
+                return this.updateError(error.error || "Failed to create room");
             }
 
             const data = await response.json();
-            if (data.code) {
-                // Auto-join the created room
-                this.joinRoom(data.code);
-            }
+            if (data.code) return this.joinRoom(data.code); // Auto-join the created room
         } catch (error) {
-            this.updateError(error.message);
+            return this.updateError(error.message);
         }
     }
 
     joinRoom(code) {
-        if (!this.isAuthenticated.get()) {
-            this.updateError("Please sign in first");
-            return;
-        }
+        if (!state.isAuthenticated.get()) return this.updateError("Please sign in first");
 
-        if (!this.socket || !this.connected.get()) {
-            this.updateError("Not connected to server");
-            return;
-        }
+        if (!this.socket || !state.connected.get()) return this.updateError("Not connected to server");
 
         if (!code || code.trim() === "") {
-            this.updateError("Please enter a room code");
-            return;
+            return this.updateError("Please enter a room code");
         }
 
         this.socket.emit("room.join", {
             code: code.trim(),
             clientTimestamp: Date.now(),
         });
-    }
-
-    leaveRoom() {
-        if (!this.socket || !this.currentRoom.get()) {
-            return;
-        }
-
-        this.socket.emit("room.leave", {
-            code: this.currentRoom.get(),
-        });
-
-        this.currentRoom.set(null);
     }
 }

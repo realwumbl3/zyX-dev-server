@@ -122,7 +122,6 @@ export class ConditionalGroup {
         this.evaluateConditions();
     }
 
-
     /**
      * Evaluates all conditions in the group and updates visibility
      */
@@ -194,15 +193,15 @@ export class ConditionalGroup {
 }
 
 /**
- * Find the most recent zyx-if sibling that precedes the given element
+ * Find the most recent zyx-if or zyx-if-not sibling that precedes the given element
  * @param {HTMLElement} element - The element to search backwards from
- * @returns {HTMLElement|null} - The preceding zyx-if element or null
+ * @returns {HTMLElement|null} - The preceding zyx-if/zyx-if-not element or null
  */
 function findPrecedingIfElement(element) {
     let currentElement = element.previousElementSibling;
 
     while (currentElement) {
-        if (currentElement.hasAttribute("zyx-if")) {
+        if (currentElement.hasAttribute("zyx-if") || currentElement.hasAttribute("zyx-if-not")) {
             return currentElement;
         }
         currentElement = currentElement.previousElementSibling;
@@ -225,28 +224,47 @@ export function getConditionalGroup(ifElement) {
 }
 
 /**
- * Get the conditional group for an elif or else element by finding its corresponding if
- * @param {HTMLElement} element - The zyx-elif or zyx-else element
+ * Get the conditional group for an elif, else-if-not, or else element by finding its corresponding if
+ * @param {HTMLElement} element - The zyx-elif, zyx-else-if-not, or zyx-else element
  * @returns {ConditionalGroup|null} - The conditional group or null if no if found
  */
 function getConditionalGroupForElseIf(element) {
     const ifElement = findPrecedingIfElement(element);
     if (!ifElement) {
-        console.warn("zyx-elif or zyx-else found without a preceding zyx-if:", element);
+        console.warn("zyx-elif, zyx-else-if-not, or zyx-else found without a preceding zyx-if or zyx-if-not:", element);
         return null;
     }
     return getConditionalGroup(ifElement);
 }
 
 /**
- * Process zyx-if attribute
+ * Creates an inverted predicate wrapper
+ * @param {Function|null} predicate - The original predicate function
+ * @returns {Function} - Inverted predicate function
  */
-export function processIf({ node, data, zyxhtml }) {
+function createInvertedPredicate(predicate) {
+    return predicate
+        ? (...args) => !predicate(...args)
+        : (value) => !value;
+}
+
+/**
+ * Process zyx-if attribute
+ * @param {Object} options - Processing options
+ * @param {HTMLElement} options.node - The element node
+ * @param {*} options.data - Condition data
+ * @param {*} options.zyxhtml - zyxhtml instance
+ * @param {boolean} [options.invert=false] - Whether to invert the condition
+ */
+export function processIf({ node, data, zyxhtml, invert = false }) {
     // Create a new conditional group for this if element
     const group = getConditionalGroup(node);
 
     // Process condition data
     const { reactive, predicate } = normalizeConditionData(data);
+
+    // Apply inversion if requested
+    const finalPredicate = invert ? createInvertedPredicate(predicate) : predicate;
 
     // Check for inline or attribute and process it
     let inlineOr = null;
@@ -256,7 +274,13 @@ export function processIf({ node, data, zyxhtml }) {
         const orData = orPlaceholderId !== null && zyxhtml ? zyxhtml.getDataByPlaceholderId(orPlaceholderId) : null;
 
         if (orData !== null && orData !== undefined) {
-            inlineOr = normalizeConditionData(orData);
+            const { reactive: orReactive, predicate: orPredicate } = normalizeConditionData(orData);
+            // Apply inversion to inline or predicate if requested
+            const finalOrPredicate = invert ? createInvertedPredicate(orPredicate) : orPredicate;
+            inlineOr = {
+                reactive: orReactive,
+                predicate: finalOrPredicate,
+            };
         }
 
         // Remove the or attribute after processing
@@ -268,16 +292,21 @@ export function processIf({ node, data, zyxhtml }) {
     // Add to conditional group
     group.addCondition(node, {
         reactive,
-        predicate,
+        predicate: finalPredicate,
         inlineOr,
     });
 }
 
 /**
  * Process zyx-else-if attribute
+ * @param {Object} options - Processing options
+ * @param {HTMLElement} options.node - The element node
+ * @param {*} options.data - Condition data
+ * @param {*} options.zyxhtml - zyxhtml instance
+ * @param {boolean} [options.invert=false] - Whether to invert the condition
  */
-export function processElseIf({ node, data, zyxhtml }) {
-    // Find the conditional group from the preceding zyx-if
+export function processElseIf({ node, data, zyxhtml, invert = false }) {
+    // Find the conditional group from the preceding zyx-if or zyx-if-not
     const group = getConditionalGroupForElseIf(node);
 
     if (!group) {
@@ -287,6 +316,9 @@ export function processElseIf({ node, data, zyxhtml }) {
     // Process condition data
     const { reactive, predicate } = normalizeConditionData(data);
 
+    // Apply inversion if requested
+    const finalPredicate = invert ? createInvertedPredicate(predicate) : predicate;
+
     // Check for inline or attribute and process it
     let inlineOr = null;
     if (node.hasAttribute(INLINE_OR_ATTRIBUTE_NAME)) {
@@ -295,7 +327,13 @@ export function processElseIf({ node, data, zyxhtml }) {
         const orData = orPlaceholderId !== null && zyxhtml ? zyxhtml.getDataByPlaceholderId(orPlaceholderId) : null;
 
         if (orData !== null && orData !== undefined) {
-            inlineOr = normalizeConditionData(orData);
+            const { reactive: orReactive, predicate: orPredicate } = normalizeConditionData(orData);
+            // Apply inversion to inline or predicate if requested
+            const finalOrPredicate = invert ? createInvertedPredicate(orPredicate) : orPredicate;
+            inlineOr = {
+                reactive: orReactive,
+                predicate: finalOrPredicate,
+            };
         }
 
         // Remove the or attribute after processing
@@ -307,7 +345,7 @@ export function processElseIf({ node, data, zyxhtml }) {
     // Add to conditional group
     group.addCondition(node, {
         reactive,
-        predicate,
+        predicate: finalPredicate,
         inlineOr,
     });
 }
@@ -332,6 +370,8 @@ export function processElse({ node, data, zyxhtml }) {
 // Export the conditional attribute processors for registration in zyX-HTML.js
 export const conditionalAttributes = {
     "zyx-if": processIf,
+    "zyx-if-not": ({ node, data, zyxhtml }) => processIf({ node, data, zyxhtml, invert: true }),
     "zyx-elif": processElseIf,
+    "zyx-elif-not": ({ node, data, zyxhtml }) => processElseIf({ node, data, zyxhtml, invert: true }),
     "zyx-else": processElse,
 };

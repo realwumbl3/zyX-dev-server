@@ -11,7 +11,7 @@
 
 // Core imports
 // HTML
-import html, { ZyXHTML } from "./src/HTML/HTML.js";
+import html, { debugHTML, ZyXHTML } from "./src/HTML/HTML.js";
 
 // CSS
 import css, { zyxcss } from "./src/CSS.js";
@@ -27,6 +27,7 @@ import { LiveList, LiveDeque, LiveVar } from "./src/LiveTypes.js";
 export {
     // HTML
     html,
+    debugHTML,
     // CSS
     css,
     zyxcss,

@@ -47,7 +47,9 @@ export class LiveInterp {
                 updateFunction = () => {
                     const newValue = makePlaceable(this.interprate());
                     if (!newValue) {
-                        this.activeDomNode.style.display = "none";
+                        if (this.activeDomNode) {
+                            this.activeDomNode.style.display = "none";
+                        }
                         return;
                     }
                     this.activeDomNode.replaceWith(newValue);
