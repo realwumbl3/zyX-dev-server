@@ -129,6 +129,7 @@
     background: radial-gradient(circle at top right, rgba(0, 243, 255, 0.08), transparent 50%),
         radial-gradient(circle at bottom left, rgba(188, 19, 254, 0.06), transparent 50%);
     opacity: 0.6;
+    border-radius: var(--radius-sm);
     pointer-events: none;
     transition: opacity 0.25s ease;
 }
@@ -144,12 +145,12 @@
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.3s ease;
+    border-radius: var(--radius-sm);
 }
 
 .room-component:hover {
     border-color: rgba(255, 255, 255, 0.25);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    transform: translateY(-2px);
 }
 
 .room-component:hover::before {
@@ -171,12 +172,41 @@
     letter-spacing: -0.01em;
 }
 
-.room-component .room-actions {
+.room-component .room-header {
     display: flex;
-    margin-top: auto;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
     position: relative;
     z-index: 1;
-    justify-content: flex-end;
+}
+
+.room-leave-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: calc(var(--radius-sm) - 1px);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    line-height: 1;
+    position: relative;
+    overflow: hidden;
+    min-width: auto;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-secondary);
+}
+
+.room-leave-btn:hover {
+    background: rgba(255, 0, 0, 0.2);
+    border-color: rgba(255, 0, 0, 0.4);
+    color: #ff6b6b;
+    transform: scale(1.05);
+}
+
+.leave-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+    font-weight: 300;
 }
 
 .room-component .btn {
@@ -237,4 +267,227 @@
 
 .sidebar .room-component:hover {
     border-color: rgba(255, 255, 255, 0.3);
+}
+
+.room-entry {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.room-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-hub-panel);
+    backdrop-filter: blur(12px);
+    border: var(--outline-hub);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.room-circle::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(0, 243, 255, 0.06), transparent 50%);
+    opacity: 0.6;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.room-entry:hover .room-circle {
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    transform: scale(1.05);
+}
+
+.room-entry:hover .room-circle::before {
+    opacity: 0.8;
+}
+
+.room-entry[focused] .room-circle {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 12px rgba(0, 243, 255, 0.3), 0 4px 16px rgba(0, 0, 0, 0.4);
+    background: linear-gradient(135deg, rgba(0, 243, 255, 0.03), rgba(188, 19, 254, 0.02));
+}
+
+.unified-room-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: center;
+    width: 80px;
+    left: -20px;
+    position: relative;
+    overflow-y: auto;
+    scrollbar-width: none;
+    margin-top: -20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    margin-bottom: -20px;
+    /* hide the 20px bottom of the list */
+    --mask: linear-gradient(to bottom, white calc(100% - 20px), transparent 100%);
+    mask-image: var(--mask);
+    -webkit-mask-image: var(--mask);
+
+}
+
+.create-room-entry {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.create-room-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-hub-panel);
+    backdrop-filter: blur(12px);
+    border: var(--outline-hub);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.create-room-circle::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(0, 243, 255, 0.06), transparent 50%);
+    opacity: 0.6;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.create-room-entry:hover .create-room-circle {
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    transform: scale(1.05);
+}
+
+.create-room-entry:hover .create-room-circle::before {
+    opacity: 0.8;
+}
+
+.circle-icon {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    position: relative;
+    z-index: 1;
+    line-height: 1;
+}
+
+.delete-mode-entry {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    .unified-room-list[delete-mode] & .delete-mode-circle {
+        background: rgba(255, 0, 0, 0.9);
+        border-color: rgba(255, 0, 0, 0.8);
+        transform: scale(1.1);
+
+    }
+}
+
+.delete-mode-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-hub-panel);
+    backdrop-filter: blur(12px);
+    border: var(--outline-hub);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.delete-mode-circle::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(255, 0, 0, 0.06), transparent 50%);
+    opacity: 0.6;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.delete-mode-entry:hover .delete-mode-circle {
+    border-color: rgba(255, 0, 0, 0.4);
+    box-shadow: 0 4px 16px rgba(255, 0, 0, 0.2);
+    transform: scale(1.05);
+}
+
+.delete-mode-entry:hover .delete-mode-circle::before {
+    opacity: 0.8;
+}
+
+.delete-room-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(255, 0, 0, 0.9);
+    border: 2px solid rgba(255, 0, 0, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    z-index: 2;
+
+    .unified-room-list[delete-mode] & {
+        display: initial;
+    }
+}
+
+.delete-room-btn:hover {
+    opacity: 1;
+}
+
+.delete-icon {
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    line-height: 1;
 }

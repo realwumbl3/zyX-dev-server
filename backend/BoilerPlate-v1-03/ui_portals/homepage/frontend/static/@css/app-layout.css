@@ -2,20 +2,15 @@
     display: flex;
     gap: 1rem;
     height: calc(100vh - 180px);
-    min-height: 500px;
     padding: 0.75rem 1rem;
 }
 
 .sidebar {
-    width: 280px;
-    min-width: 280px;
-    max-width: 350px;
+    width: 40px;
     display: flex;
     flex-direction: column;
-    gap: 0.875rem;
-    overflow-y: auto;
-    padding-right: 0.5rem;
     position: relative;
+    scrollbar-width: none;
 }
 
 .sidebar::-webkit-scrollbar {
@@ -40,8 +35,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
-    min-width: 0; /* Prevent flex item from overflowing */
+    min-width: 0;
 }
 
 .room-list-sidebar {
