@@ -1,21 +1,14 @@
-import { html, debugHTML, css, LiveVar, LiveList } from "/shared/dep/zyx-library/index.js";
+import { html, debugHTML, css } from "/shared/dep/zyx-library/index.js";
 import io from "/shared/dep/socket.io.min.esm.js";
 
 import AppHeaderComponent from "./app-header.js";
-import { RoomModel, RoomListComponent, RoomViewComponent } from "./room-manager.js";
-import { roomStateManager } from "./room-manager.js";
+import RoomModel from "../models/room-model.js";
+import RoomListComponent from "./room-list.js";
+import RoomViewComponent from "./room-view.js";
+import { roomStateManager } from "../managers/room-state-manager.js";
+import { appState } from "../managers/app-state-manager.js";
 import UserSettingsComponent from "./user-settings.js";
 import UserProfileComponent from "./user-profile.js";
-
-class AppStateManager {
-    constructor() {
-        this.error = new LiveVar(null);
-        this.isAuthenticated = new LiveVar(false);
-        this.connected = new LiveVar(false);
-    }
-}
-
-export const appState = new AppStateManager();
 
 export default class MainApp {
     constructor() {
@@ -189,6 +182,4 @@ export default class MainApp {
 
 export const MainAppNamespace = {
     MainApp,
-    AppStateManager,
-    appState,
 };

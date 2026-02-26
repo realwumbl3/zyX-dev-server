@@ -1,6 +1,6 @@
 import { html } from "/shared/dep/zyx-library/index.js";
 
-import { appState } from "./main-app.js";
+import { appState } from "../managers/app-state-manager.js";
 
 export default class AppHeaderComponent {
     constructor(app) {
